@@ -1,0 +1,87 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-display font-bold text-gray-900 mb-2">Report Found Item</h1>
+            <p class="text-gray-600">Help someone get their lost item back by reporting what you found</p>
+        </div>
+
+        <form action="/report-found" method="POST" enctype="multipart/form-data" class="space-y-6">
+            <div>
+                <label for="item-photo" class="block text-sm font-medium text-gray-700 mb-2">Item Photo</label>
+                <input type="file" id="item-photo" name="item-photo" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-accent-50 file:text-accent-700 hover:file:bg-accent-100">
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <label for="itemName" class="block text-sm font-medium text-gray-700 mb-2">What did you find? *</label>
+                    <input type="text" id="itemName" name="itemName" required class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="e.g., Phone, Wallet, Keys">
+                </div>
+                <div>
+                    <label for="category" class="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                    <select id="category" name="category" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        <option value="">Select category</option>
+                        <option value="electronics">Electronics</option>
+                        <option value="clothing">Clothing</option>
+                        <option value="accessories">Accessories</option>
+                        <option value="documents">Documents</option>
+                        <option value="keys">Keys</option>
+                        <option value="jewelry">Jewelry</option>
+                        <option value="bags">Bags</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                <textarea id="description" name="description" required rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Describe the item you found (color, brand, size, condition, etc.)"></textarea>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <label for="foundLocation" class="block text-sm font-medium text-gray-700 mb-2">Where did you find it? *</label>
+                    <select id="foundLocation" name="foundLocation" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        <option value="">Select Location</option>
+                        <option value="BSH-Department">BSH-Department</option>
+                        <option value="CIVIL-Department">CIVIL-Department</option>
+                        <option value="BIOTECH-Department">BIOTECH-Department</option>
+                        <option value="ENTC-Department">ENTC-Department</option>
+                        <option value="Ground">Ground</option>
+                        <option value="Library">Library</option>
+                        <option value="AIML-building">AIML-building</option>
+                        <option value="South-enclave">South-enclave</option>
+                        <option value="North-enclave">North-enclave</option>
+                        <option value="boys-hostel">boys-hostel</option>
+                        <option value="Girls-hostel">Girls-hostel</option>
+                        <option value="MBA-building">MBA-building</option>
+                        <option value="other">other</option>
+                    </select> 
+                </div>                  
+                <div>
+                    <label for="foundDate" class="block text-sm font-medium text-gray-700 mb-2">When did you lose it? *</label>
+                    <input type="date" id="foundDate" name="foundDate" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                </div>
+            </div>
+
+             <div>
+                <label for="currentLocation" class="block text-sm font-medium text-gray-700 mb-2">Where is the item now? *</label>
+                <input type="text" id="currentLocation" name="currentLocation" required class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="e.g., Police station, My office, Safe at home">
+            </div>
+            <div>
+                <label for="contactPhone" class="block text-sm font-medium text-gray-700 mb-2">Your Contact Phone *</label>
+                <input type="tel" id="contactPhone" name="contactPhone" required class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="(555) 123-4567">
+                <p class="mt-1 text-sm text-gray-500">Required so the owner can contact you to arrange pickup</p>
+            </div>
+
+            <div class="flex justify-end space-x-4">
+                <a href="/" class="px-6 py-2 border border-gray-300 rounded-md  text-gray-700 hover:bg-red-400">Cancel</a>
+                <button type="submit" class="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Submit Report</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

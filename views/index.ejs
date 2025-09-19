@@ -1,0 +1,92 @@
+<%- include('partials/header') %>
+<div class="flex flex-col min-h-screen">
+<%- include('partials/navbar') %>
+
+<main>
+    <div class="bg-gradient-to-br from-primary-50 to-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+            <h1 class="text-4xl md:text-6xl font-display font-bold text-gray-900 mb-6">
+                Lost Something?<br>
+                <span class="text-cyan-600">We'll Help You Find It</span>
+            </h1>
+            <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+                Connect with our community to report lost items and help others find what they've lost. Together, we can reunite people with their belongings.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="/report-lost" class="bg-red-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-600 transition-colors">
+                    Report Lost Item
+                </a>
+                <a href="/report-found" class="bg-green-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors">
+                    Report Found Item
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-display font-bold text-gray-900 mb-4">How FindMate Works</h2>
+                <p class="text-lg text-gray-600">Simple steps to help you find or return lost items</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="text-center">
+                    <div class="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-blue-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Report</h3>
+                    <p class="text-gray-600">Quickly report your lost item with photos and details, or report something you found.</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-accent-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-red-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Search</h3>
+                    <p class="text-gray-600">Browse through lost and found items with smart filters and search functionality.</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Reunite</h3>
+                    <p class="text-gray-600">Connect with others to return lost items and bring joy back to their owners.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bg-cyan-600 py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex gap-8 text-center overflow-x-auto justify-center">
+        <div class="flex-1 p-4">
+            <div class="text-4xl font-bold text-white mb-2"><%= itemsReported %></div>
+            <div class="text-black">Items Reported</div>
+        </div>
+        <div class="flex-1 p-4">
+            <div class="text-4xl font-bold text-white mb-2"><%= itemsReunited %></div>
+            <div class="text-black">Items Reunited</div>
+        </div>
+        <div class="flex-1 p-4">
+            <div class="text-4xl font-bold text-white mb-2"><%= happyUsers %></div>
+            <div class="text-black">Happy Users</div>
+        </div>
+        </div>
+    </div>
+    </div>
+    <div class="bg-gray-50 py-16">
+        <div class="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-display font-bold text-gray-900 mb-4">Ready to Get Started?</h2>
+            <p class="text-lg text-gray-600 mb-8">Join our community and help make lost items a thing of the past.</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="/view-lost" class="bg-green-300 border border-green-300 text-white-600 px-8 py-3 rounded-lg font-semibold hover:bg-green-500 transition-colors">
+                    Browse Lost Items
+                </a>
+                <a href="/view-found" class="bg-green-300 border border-green-300 text-white-600 px-8 py-3 rounded-lg font-semibold hover:bg-green-500 transition-colors">
+                    Browse Found Items
+                </a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<%- include('partials/footer') %>
+</div>

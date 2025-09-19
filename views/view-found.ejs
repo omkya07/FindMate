@@ -1,0 +1,80 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white border-b border-gray-200 p-6 mb-6 rounded-lg shadow-sm">
+        <h1 class="text-3xl font-display font-bold text-gray-900">Found Items</h1>
+        <p class="mt-1 text-gray-600">Browse items waiting to be claimed</p>
+        <div class="mt-4 flex flex-col md:flex-row gap-4">
+            <input type="text" id="search-input" placeholder="Search found items..." value="<%= search %>" class="flex-grow px-4 py-2 border border-gray-300 rounded-md">
+            <select id="category-filter" class="px-4 py-2 border border-gray-300 rounded-md">
+                <option value="">All Categories</option>
+                <option value="electronics" <%= category === 'electronics' ? 'selected' : '' %>>Electronics</option>
+                <option value="clothing" <%= category === 'clothing' ? 'selected' : '' %>>Clothing</option>
+                <option value="accessories" <%= category === 'accessories' ? 'selected' : '' %>>Accessories</option>
+                <option value="documents" <%= category === 'documents' ? 'selected' : '' %>>Documents</option>
+                <option value="keys" <%= category === 'keys' ? 'selected' : '' %>>Keys</option>
+                <option value="jewelry" <%= category === 'jewelry' ? 'selected' : '' %>>Jewelry</option>
+                <option value="bags" <%= category === 'bags' ? 'selected' : '' %>>Bags</option>
+                <option value="other" <%= category === 'other' ? 'selected' : '' %>>Other</option>
+            </select>
+            <select id="date-filter" class="px-4 py-2 border border-gray-300 rounded-md">
+                <option value="any">Any Date</option>
+                <option value="today" <%= date === 'today' ? 'selected' : '' %>>Today</option>
+                <option value="week" <%= date === 'week' ? 'selected' : '' %>>This Week</option>
+                <option value="month" <%= date === 'month' ? 'selected' : '' %>>This Month</option>
+            </select>
+        </div>
+    </div>
+
+    <% if(items.length === 0) { %>
+        <div id="no-results" class="text-center py-12">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">No items found</h3>
+            <p class="mt-1 text-sm text-gray-500">Try adjusting your search or filters.</p>
+        </div>
+    <% } else { %>
+        <div id="items-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <% items.forEach(function(item){ %>
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+                    <% if(item.photoUrl) { %>
+                        <img class="h-48 w-full object-cover" src="<%= item.photoUrl %>" alt="<%= item.itemName %>">
+                    <% } else { %>
+                         <div class="h-48 w-full bg-gray-200 flex items-center justify-center">
+                            <span class="text-gray-500">No Image</span>
+                        </div>
+                    <% } %>
+                    <div class="p-4 flex flex-col flex-grow">
+                        <h3 class="text-lg font-semibold text-gray-900"><%= item.itemName %></h3>
+                        <p class="text-gray-700 text-sm mb-4 flex-grow"><%= item.description.substring(0, 100) %>...</p>
+                        <p><b>Found Location:</b> <%= item.foundLocation %></p>
+                        <p><b>Found Date:</b> <%= new Date(item.foundDate).toLocaleDateString() %></p>
+                        <% if(item.finder) { %>
+                            <button class="contact-btn mt-auto w-full bg-blue-500 text-accent-foreground py-2 rounded-md hover:opacity-90"
+                                data-name="<%= item.finder.fullName %>"
+                                data-email="<%= item.finder.email %>"
+                                data-phone="<%= item.finder.phone || 'Not provided' %>">
+                                Contact Finder
+                            </button>
+                        <% } %>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    <% } %>
+</div>
+
+<div id="contact-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 max-w-md mx-4">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-medium text-gray-900">Contact Details</h3>
+            <button id="close-contact-modal" class="text-gray-400 hover:text-gray-600">&times;</button>
+        </div>
+        <div id="contact-info" class="space-y-2">
+            </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

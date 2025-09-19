@@ -1,0 +1,129 @@
+<footer class="bg-gray-900 text-white py-12 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-4 gap-8">
+            <div>
+                <h3 class="text-xl font-display font-bold mb-4">FindMate</h3>
+                <p class="text-gray-400">Helping communities reunite with their lost belongings.</p>
+            </div>
+
+            <div>
+                <h4 class="font-semibold mb-4">Quick Links</h4>
+                <ul class="space-y-2 text-gray-400">
+                    <li><a href="/report-lost" class="hover:text-white">Report Lost</a></li>
+                    <li><a href="/report-found" class="hover:text-white">Report Found</a></li>
+                    <li><a href="/view-lost" class="hover:text-white">Lost Items</a></li>
+                    <li><a href="/view-found" class="hover:text-white">Found Items</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="font-semibold mb-4">Support</h4>
+                <ul class="space-y-2 text-gray-400">
+                    <li><a href="/help-center" class="hover:text-white">Help Center</a></li>
+                    <li><a href="/contact" class="hover:text-white">Contact Us</a></li>
+                    <li><a href="/privacy-policy" class="hover:text-white">Privacy Policy</a></li>
+                    <li><a href="/terms-of-service" class="hover:text-white">Terms of Service</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="font-semibold mb-4">Connect</h4>
+                <ul class="space-y-2 text-gray-400">
+                    <li><a href="#" class="hover:text-white">Facebook</a></li>
+                    <li><a href="#" class="hover:text-white">Twitter</a></li>
+                    <li><a href="#" class="hover:text-white">Instagram</a></li>
+                    <li><a href="/community" class="hover:text-white">Community</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+            <p>&copy; 2025 FindMate. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+<script>
+    // --- Mobile Menu Toggle Script ---
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    if (mobileMenuButton) {
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+    }
+
+    // --- Auto Fade Out Flash Messages Script ---
+    setTimeout(() => {
+        document.querySelectorAll('.flash-message').forEach(el => {
+            el.style.transition = 'opacity 0.6s ease';
+            el.style.opacity = '0';
+            setTimeout(() => el.remove(), 600);
+        });
+    }, 5000);
+
+    // --- Contact Modal Script ---
+    const contactModal = document.getElementById('contact-modal');
+    if (contactModal) {
+        const closeContactModalBtn = document.getElementById('close-contact-modal');
+        const contactInfoDiv = document.getElementById('contact-info');
+        document.body.addEventListener('click', function(event) {
+            if (event.target.classList.contains('contact-btn')) {
+                const btn = event.target;
+                contactInfoDiv.innerHTML = `<p><strong>Name:</strong> ${btn.dataset.name}</p><p><strong>Email:</strong> <a href="mailto:${btn.dataset.email}" class="text-primary">${btn.dataset.email}</a></p><p><strong>Phone:</strong> ${btn.dataset.phone}</p>`;
+                contactModal.classList.remove('hidden');
+                contactModal.classList.add('flex');
+            }
+        });
+        closeContactModalBtn.addEventListener('click', () => {
+            contactModal.classList.add('hidden');
+            contactModal.classList.remove('flex');
+        });
+        contactModal.addEventListener('click', (e) => {
+            if (e.target === contactModal) {
+                contactModal.classList.add('hidden');
+                contactModal.classList.remove('flex');
+            }
+        });
+    }
+
+    // --- NEW: Live Search and Filter Script ---
+    const searchInput = document.getElementById('search-input');
+    const categoryFilter = document.getElementById('category-filter');
+    const dateFilter = document.getElementById('date-filter');
+
+    // Debounce function to prevent too many reloads while typing
+    function debounce(func, delay) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), delay);
+        };
+    }
+
+    function updatePageWithFilters() {
+        const search = searchInput.value;
+        const category = categoryFilter.value;
+        const date = dateFilter.value;
+        
+        // Get the current page path (e.g., /view-lost or /view-found)
+        const path = window.location.pathname;
+
+        // Build the query string
+        const params = new URLSearchParams();
+        if (search) params.append('search', search);
+        if (category) params.append('category', category);
+        if (date && date !== 'any') params.append('date', date);
+
+        // Reload the page with the new filters
+        window.location.href = `${path}?${params.toString()}`;
+    }
+
+    if(searchInput && categoryFilter && dateFilter) {
+        searchInput.addEventListener('input', debounce(updatePageWithFilters, 500)); // 500ms delay
+        categoryFilter.addEventListener('change', updatePageWithFilters);
+        dateFilter.addEventListener('change', updatePageWithFilters);
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,66 @@
+<nav class="bg-white shadow-sm border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <a href="/" class="text-2xl font-display font-bold text-cyan-600">FindMate</a>
+                </div>
+            </div>
+            <div class="hidden md:block">
+                <div class="ml-10 flex items-baseline space-x-4">
+                    <a href="/" class="text-gray-600 hover:text-blue-700 hover:bg-green-500 px-3 py-2 rounded-md text-sm font-medium">Home</a>
+                    <a href="/view-lost" class="text-gray-600 hover:text-blue-700 hover:bg-green-500 px-3 py-2 rounded-md text-sm font-medium">Lost Items</a>
+                    <a href="/view-found" class="text-gray-600 hover:text-blue-700 hover:bg-green-500 px-3 py-2 rounded-md text-sm font-medium">Found Items</a>
+
+                    <% if(!currentUser) { %>
+                        <a href="/auth" class="bg-green-600 hover:bg-green-700 px-3 py-2 rounded-md text-white text-sm font-medium">Sign-Up/login</a>
+                    <% } else { %>
+                        <a href="/report-lost" class="text-gray-600 hover:bg-green-500 hover:text-blue-700 px-3 py-2 rounded-md text-sm font-medium">Report Lost Item</a>
+                        <a href="/report-found" class="text-gray-600 hover:bg-green-500 hover:text-blue-700 px-3 py-2 rounded-md text-sm font-medium">Report Found Item</a>
+                        <a href="/logout" class="bg-red-500 text-white hover:bg-red-600 px-4 py-2 rounded-md text-sm font-medium">Log out</a>
+                    <% } %>
+                </div>
+            </div>
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none">
+                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+            </div>
+    </div>
+
+    <div id="mobile-menu" class="md:hidden hidden">
+        <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+            <a href="/" class="text-gray-600 hover:text-blue-700 hover:bg-green-500 block px-3 py-2 rounded-md text-base font-medium">Home</a>
+            <a href="/view-lost" class="text-gray-600 hover:text-blue-700 hover:bg-green-500 block px-3 py-2 rounded-md text-base font-medium">Lost Items</a>
+            <a href="/view-found" class="text-gray-600 hover:text-blue-700 hover:bg-green-500 block px-3 py-2 rounded-md text-base font-medium">Found Items</a>
+            
+            <% if(!currentUser) { %>
+                <a href="/auth" class="bg-green-600 hover:bg-green-700 text-white block px-3 py-2 rounded-md text-base font-medium">Sign-Up/login</a>
+            <% } else { %>
+                <a href="/report-lost" class="text-gray-600 hover:text-primary-600 block px-3 py-2 rounded-md text-base font-medium">Report Lost Item</a>
+                <a href="/report-found" class="text-gray-600 hover:text-primary-600 block px-3 py-2 rounded-md text-base font-medium">Report Found Item</a>
+                <a href="/logout" class="bg-red-500 text-white hover:bg-accent-600 block px-3 py-2 rounded-md text-base font-medium">Logout</a>
+            <% } %>
+        </div>
+    </div>
+    </nav>
+
+<% if ((success && success.length) || (error && error.length)) { %>
+  <div class="max-w-7xl px-4 sm:px-6 lg:px-8 mt-4">
+      <% if(success && success.length) { %>
+          <div class="flash-message bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded" role="alert">
+              <p class="font-bold">Success</p>
+              <p><%= success %></p>
+          </div>
+      <% } %>
+      <% if(error && error.length) { %>
+          <div class="flash-message bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded" role="alert">
+              <p class="font-bold">Error</p>
+              <p><%= error %></p>
+          </div>
+      <% } %>
+  </div>
+<% } %>
