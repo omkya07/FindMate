@@ -1,4 +1,5 @@
 var createError = require('http-errors');
+const MongoStore = require('connect-mongo');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
@@ -45,11 +46,15 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(methodOverride('_method')); // <-- AND ADD THIS
 
-// Session Configuration
+// Updated Session Configuration
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false, // Good practice: don't save empty sessions
+  store: MongoStore.create({
+    mongoUrl: process.env.DATABASE_URL,
+    touchAfter: 24 * 3600 // Optional: don't resave session if not modified (in seconds)
+  }),
   cookie: {
     httpOnly: true,
     expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
