@@ -329,4 +329,99 @@ router.post('/admin/founditems/:id/delete', isAdmin, async (req, res) => {
     req.flash('success', 'Successfully deleted the found item report.');
     res.redirect('/admin/dashboard#found-items');
 });
+// Display the forgot password form
+router.get('/forgot-password', (req, res) => {
+    res.render('forgot-password');
+});
+
+// Handle the forgot password form submission
+router.post('/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            // For security, we don't reveal if the user exists or not
+            req.flash('success', 'If an account with that email exists, a password reset link has been sent.');
+            return res.redirect('/forgot-password');
+        }
+
+        const token = crypto.randomBytes(20).toString('hex');
+        user.resetPasswordToken = token;
+        user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+        await user.save();
+
+        const transporter = nodemailer.createTransport({
+            service: 'Gmail',
+            auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
+        });
+
+        const resetUrl = `http://${req.headers.host}/reset-password/${token}`;
+        const mailOptions = {
+            to: user.email,
+            from: `FindMate <${process.env.EMAIL_USER}>`,
+            subject: 'FindMate - Password Reset Request',
+            html: `<p>You are receiving this because you (or someone else) have requested the reset of the password for your account.</p>
+                   <p>Please click on the following link, or paste this into your browser to complete the process:</p>
+                   <a href="${resetUrl}">${resetUrl}</a>
+                   <p>If you did not request this, please ignore this email and your password will remain unchanged.</p>`
+        };
+        
+        await transporter.sendMail(mailOptions);
+        req.flash('success', `An email has been sent to ${user.email} with further instructions.`);
+        res.redirect('/forgot-password');
+    } catch (e) {
+        req.flash('error', 'Something went wrong.');
+        res.redirect('/forgot-password');
+    }
+});
+
+// Display the password reset form
+router.get('/reset-password/:token', async (req, res) => {
+    const user = await User.findOne({
+        resetPasswordToken: req.params.token,
+        resetPasswordExpires: { $gt: Date.now() }
+    });
+    if (!user) {
+        req.flash('error', 'Password reset token is invalid or has expired.');
+        return res.redirect('/forgot-password');
+    }
+    res.render('reset-password', { token: req.params.token });
+});
+
+// Handle the password reset form submission
+router.post('/reset-password/:token', async (req, res) => {
+    try {
+        const user = await User.findOne({
+            resetPasswordToken: req.params.token,
+            resetPasswordExpires: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            req.flash('error', 'Password reset token is invalid or has expired.');
+            return res.redirect('/forgot-password');
+        }
+        
+        if (req.body.password !== req.body['confirm-password']) {
+            req.flash('error', 'Passwords do not match.');
+            return res.redirect(`/reset-password/${req.params.token}`);
+        }
+
+        // setPassword is a method from passport-local-mongoose
+        await user.setPassword(req.body.password);
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+        
+        // Log the user in automatically after password reset
+        req.login(user, (err) => {
+            if (err) { return next(err); }
+            req.flash('success', 'Your password has been successfully updated!');
+            res.redirect('/');
+        });
+    } catch (e) {
+        req.flash('error', 'Something went wrong.');
+        res.redirect('/forgot-password');
+    }
+});
 module.exports = router;

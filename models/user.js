@@ -25,7 +25,6 @@ const userSchema = new Schema({
         enum: ['user', 'admin'],
         default: 'user'
     },
-    // ADD/UPDATE THESE FIELDS
     isVerified: {
         type: Boolean,
         default: false
@@ -34,6 +33,12 @@ const userSchema = new Schema({
         type: String
     },
     emailVerificationExpires: {
+        type: Date
+    },
+    resetPasswordToken: {
+        type: String
+    },
+    resetPasswordExpires: {
         type: Date
     }
 }, {
