@@ -12,9 +12,7 @@ const FoundItem = require('../models/foundItem');
 
 const upload = multer({ storage });
 
-// =================================================================
-// MIDDLEWARE
-// =================================================================
+
 const isLoggedIn = (req, res, next) => {
     if (!req.isAuthenticated()) {
         req.session.returnTo = req.originalUrl;
@@ -32,9 +30,7 @@ const isAdmin = (req, res, next) => {
     next();
 };
 
-// =================================================================
-// CORE & STATIC PAGE ROUTES
-// =================================================================
+
 
 // Home Page
 router.get('/', async (req, res) => {
@@ -56,14 +52,11 @@ router.get('/privacy-policy', (req, res) => res.render('privacy-policy'));
 router.get('/terms-of-service', (req, res) => res.render('terms-of-service'));
 router.get('/community', (req, res) => res.render('community'));
 
-// =================================================================
-// AUTHENTICATION ROUTES (EMAIL VERIFICATION)
-// =================================================================
 
 // Render Combined Auth Page
 router.get('/auth', (req, res) => res.render('auth'));
 router.get('/signup', (req, res) => res.redirect('/auth'));
-router.get('/login', (req, res) => res.redirect('/auth'));
+router.get('/login', (req, res) => res.render('login'));
 
 // Handle Signup (sends verification email)
 router.post('/signup', async (req, res) => {
@@ -151,7 +144,7 @@ router.post('/login', (req, res, next) => {
         if (err) { return next(err); }
         if (!user) {
             req.flash('error', 'Invalid email or password.');
-            return res.redirect('/auth');
+            return res.redirect('/login');
         }
         if (!user.isVerified) {
             req.flash('error', 'Your account has not been verified. Please check your email.');
@@ -176,10 +169,6 @@ router.get('/logout', isLoggedIn, (req, res, next) => {
     });
 });
 
-
-// =================================================================
-// ITEM ROUTES
-// =================================================================
 
 // Display all lost items (with search and filters)
 router.get('/view-lost', async (req, res) => {
@@ -272,9 +261,6 @@ router.post('/report-found', isLoggedIn, upload.single('item-photo'), async (req
 });
 
 
-// =================================================================
-// ADMIN ROUTES
-// =================================================================
 router.get('/admin-login', (req, res) => {
     res.render('admin-login');
 });

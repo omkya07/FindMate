@@ -13,15 +13,11 @@ var methodOverride = require('method-override'); // <-- ADD THIS
 require('dotenv').config();
 
 
-// =================================================================
-// MODELS & ROUTERS
-// =================================================================
 var User = require('./models/user');
 var indexRouter = require('./routes/index');
 
-// =================================================================
 // DATABASE CONNECTION
-// =================================================================
+
 mongoose.connect(process.env.DATABASE_URL);
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "MongoDB connection error:"));
@@ -29,9 +25,6 @@ db.once("open", () => {
     console.log("Database connected successfully!");
 });
 
-// =================================================================
-// EXPRESS APP CONFIGURATION
-// =================================================================
 var app = express();
 
 // View engine setup
@@ -50,10 +43,10 @@ app.use(methodOverride('_method')); // <-- AND ADD THIS
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: false, // Good practice: don't save empty sessions
+  saveUninitialized: false,
   store: MongoStore.create({
     mongoUrl: process.env.DATABASE_URL,
-    touchAfter: 24 * 3600 // Optional: don't resave session if not modified (in seconds)
+    touchAfter: 24 * 3600 
   }),
   cookie: {
     httpOnly: true,
@@ -73,6 +66,7 @@ passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
 app.use(express.static(path.join(__dirname, 'public')));
+
 // Middleware to make user and flash messages available in all templates
 app.use((req, res, next) => {
   res.locals.currentUser = req.user;
@@ -81,10 +75,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// =================================================================
+
 app.use('/', indexRouter);
 
-// =================================================================
 app.use(function(req, res, next) {
   next(createError(404));
 });
