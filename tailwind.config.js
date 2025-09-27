@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+const colors = require('tailwindcss/colors')
+
 module.exports = {
   content: [
     './views/**/*.ejs',
@@ -8,6 +10,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // keep your variable-based colors
         border: 'oklch(var(--border) / <alpha-value>)',
         input: 'oklch(var(--input) / <alpha-value>)',
         ring: 'oklch(var(--ring) / <alpha-value>)',
@@ -34,6 +37,16 @@ module.exports = {
           DEFAULT: 'oklch(var(--accent) / <alpha-value>)',
           foreground: 'oklch(var(--accent-foreground) / <alpha-value>)',
         },
+
+        // ✅ Add Tailwind’s default palette for gradients & safe colors
+        blue: colors.blue,
+        indigo: colors.indigo,
+        green: colors.green,
+        red: colors.red,
+        yellow: colors.yellow,
+        purple: colors.purple,
+        pink: colors.pink,
+        gray: colors.gray,
       },
     },
   },

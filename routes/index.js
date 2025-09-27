@@ -169,6 +169,9 @@ router.get('/logout', isLoggedIn, (req, res, next) => {
     });
 });
 
+router.get('/profile', isLoggedIn, (req, res) => {
+    res.render('profile');
+});
 
 // Display all lost items (with search and filters)
 router.get('/view-lost', async (req, res) => {
