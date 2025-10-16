@@ -63,66 +63,73 @@ router.get('/signup', (req, res) => res.redirect('/auth'));
 router.get('/login', (req, res) => res.render('login'));
 
 // Handle Signup (sends verification email)
+
 router.post('/signup', async (req, res) => {
-    try {
-        const { email, fullName, phone, password, 'confirm-password': confirmPassword, terms } = req.body;
+  try {
+    const { email, fullName, phone, password, 'confirm-password': confirmPassword, terms } = req.body;
 
-        // Basic validations
-        if (password !== confirmPassword) {
-            req.flash('error', 'Passwords do not match.');
-            return res.redirect('/auth');
-        }
-        if (!terms) {
-            req.flash('error', 'You must agree to the terms of service.');
-            return res.redirect('/auth');
-        }
-
-        // Check if user already exists
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            req.flash('error', 'A user with that email address already exists.');
-            return res.redirect('/auth');
-        }
-
-        // Register new user
-        const user = new User({ email, fullName, phone });
-        const registeredUser = await User.register(user, password);
-
-        // Generate verification token
-        const token = crypto.randomBytes(20).toString('hex');
-        registeredUser.emailVerificationToken = token;
-        registeredUser.emailVerificationExpires = Date.now() + 3600000; // 1 hour
-        await registeredUser.save();
-
-        // Use http for localhost testing
-        const protocol = req.hostname === 'localhost' ? 'http' : 'https';
-        const verificationUrl = `${protocol}://${req.headers.host}/verify-email?token=${token}`;
-
-        // Send verification email using Resend
-        const response = await resend.emails.send({
-            from: 'FindMate <onboarding@resend.dev>',
-            to: registeredUser.email,
-            subject: 'FindMate - Verify Your Email Address',
-            html: `
-                <p>Hello ${registeredUser.fullName},</p>
-                <p>Thank you for signing up for <b>FindMate</b>!</p>
-                <p>Please click the link below to verify your email address:</p>
-                <a href="${verificationUrl}" target="_blank">${verificationUrl}</a>
-                <br><br>
-                <p>If you didn't create this account, you can ignore this email.</p>
-            `
-        });
-
-        // 🧩 Add this log to confirm Resend response
-        console.log("✅ Resend API response:", response);
-
-        res.render('verify-prompt');
-    } catch (e) {
-        console.error("❌ Signup Error:", e.message);
-        console.error(e.stack);
-        req.flash('error', `Signup failed: ${e.message}`);
-        res.redirect('/auth');
+    // Basic validations
+    if (password !== confirmPassword) {
+      req.flash('error', 'Passwords do not match.');
+      return res.redirect('/auth');
     }
+    if (!terms) {
+      req.flash('error', 'You must agree to the terms of service.');
+      return res.redirect('/auth');
+    }
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      req.flash('error', 'A user with that email address already exists.');
+      return res.redirect('/auth');
+    }
+
+    // Register new user
+    const user = new User({ email, fullName, phone });
+    const registeredUser = await User.register(user, password);
+
+    // Generate verification token
+    const token = crypto.randomBytes(20).toString('hex');
+    registeredUser.emailVerificationToken = token;
+    registeredUser.emailVerificationExpires = Date.now() + 3600000; // 1 hour
+    await registeredUser.save();
+
+    // Configure Nodemailer with Gmail
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_USER,       // your Gmail email
+        pass: process.env.GMAIL_PASSWORD    // Gmail App Password
+      }
+    });
+
+    const verificationUrl = `http://${req.headers.host}/verify-email?token=${token}`;
+
+    const mailOptions = {
+      from: `"FindMate" <${process.env.GMAIL_USER}>`,
+      to: registeredUser.email,
+      subject: 'Verify Your Email Address - FindMate',
+      html: `
+        <p>Hello ${registeredUser.fullName},</p>
+        <p>Thank you for signing up for <b>FindMate</b>!</p>
+        <p>Please click the link below to verify your email address:</p>
+        <a href="${verificationUrl}" target="_blank">${verificationUrl}</a>
+        <br><br>
+        <p>If you didn't create this account, you can ignore this email.</p>
+      `
+    };
+
+    // Send the email
+    await transporter.sendMail(mailOptions);
+    console.log("✅ Verification email sent via Gmail/Nodemailer.");
+
+    res.render('verify-prompt'); // show page telling user to check email
+  } catch (e) {
+    console.error("❌ Signup Error:", e.message);
+    req.flash('error', `Signup failed: ${e.message}`);
+    res.redirect('/auth');
+  }
 });
 
 
