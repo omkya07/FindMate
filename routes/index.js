@@ -4,12 +4,13 @@ const passport = require('passport');
 const multer = require('multer');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
-
+const ReunitedItem = require('../models/reunitedItems');
 const { storage } = require('../config/cloudinary');
 const User = require('../models/user');
 const LostItem = require('../models/lostItem');
 const FoundItem = require('../models/foundItem');
-
+const { Resend } = require('resend');
+const resend = new Resend(process.env.RESEND_API_KEY);
 const upload = multer({ storage });
 
 
@@ -33,17 +34,20 @@ const isAdmin = (req, res, next) => {
 
 
 // Home Page
+// Home Page
 router.get('/', async (req, res) => {
     try {
-        const itemsReported = await LostItem.countDocuments() + await FoundItem.countDocuments();
+        const itemsReported = await LostItem.countDocuments() + await FoundItem.countDocuments() + await ReunitedItem.countDocuments();
+        const itemsReunited = await ReunitedItem.countDocuments(); // ✅ Fixed
         const happyUsers = await User.countDocuments();
-        const itemsReunited = await FoundItem.countDocuments();
+
         res.render('index', { itemsReported, itemsReunited, happyUsers });
     } catch (e) {
         console.error("Homepage Stats Error:", e);
         res.render('index', { itemsReported: 0, itemsReunited: 0, happyUsers: 0 });
     }
 });
+
 
 // Footer Pages
 router.get('/help-center', (req, res) => res.render('help-center'));
@@ -57,10 +61,13 @@ router.get('/community', (req, res) => res.render('community'));
 router.get('/auth', (req, res) => res.render('auth'));
 router.get('/signup', (req, res) => res.redirect('/auth'));
 router.get('/login', (req, res) => res.render('login'));
+
 // Handle Signup (sends verification email)
 router.post('/signup', async (req, res) => {
     try {
         const { email, fullName, phone, password, 'confirm-password': confirmPassword, terms } = req.body;
+
+        // Basic validations
         if (password !== confirmPassword) {
             req.flash('error', 'Passwords do not match.');
             return res.redirect('/auth');
@@ -70,49 +77,54 @@ router.post('/signup', async (req, res) => {
             return res.redirect('/auth');
         }
 
+        // Check if user already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             req.flash('error', 'A user with that email address already exists.');
             return res.redirect('/auth');
         }
 
+        // Register new user
         const user = new User({ email, fullName, phone });
         const registeredUser = await User.register(user, password);
 
+        // Generate verification token
         const token = crypto.randomBytes(20).toString('hex');
         registeredUser.emailVerificationToken = token;
         registeredUser.emailVerificationExpires = Date.now() + 3600000; // 1 hour
         await registeredUser.save();
 
-        // Use explicit Gmail SMTP instead of 'service'
-        const transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 465,
-            secure: true, // SSL
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS // Gmail App Password
-            },
-            connectionTimeout: 10000 // 10 seconds timeout
+        // Use http for localhost testing
+        const protocol = req.hostname === 'localhost' ? 'http' : 'https';
+        const verificationUrl = `${protocol}://${req.headers.host}/verify-email?token=${token}`;
+
+        // Send verification email using Resend
+        const response = await resend.emails.send({
+            from: 'FindMate <onboarding@resend.dev>',
+            to: registeredUser.email,
+            subject: 'FindMate - Verify Your Email Address',
+            html: `
+                <p>Hello ${registeredUser.fullName},</p>
+                <p>Thank you for signing up for <b>FindMate</b>!</p>
+                <p>Please click the link below to verify your email address:</p>
+                <a href="${verificationUrl}" target="_blank">${verificationUrl}</a>
+                <br><br>
+                <p>If you didn't create this account, you can ignore this email.</p>
+            `
         });
 
-        const verificationUrl = `http://${req.headers.host}/verify-email?token=${token}`;
-        const mailOptions = {
-            to: registeredUser.email,
-            from: `FindMate <${process.env.EMAIL_USER}>`,
-            subject: 'FindMate - Verify Your Email Address',
-            html: `<p>Hello ${registeredUser.fullName}, please click the link below to verify your email address:</p><a href="${verificationUrl}">${verificationUrl}</a>`
-        };
-
-        await transporter.sendMail(mailOptions);
+        // 🧩 Add this log to confirm Resend response
+        console.log("✅ Resend API response:", response);
 
         res.render('verify-prompt');
     } catch (e) {
-        console.error("Signup Error:", e);
-        req.flash('error', 'Something went wrong. Please try again.');
+        console.error("❌ Signup Error:", e.message);
+        console.error(e.stack);
+        req.flash('error', `Signup failed: ${e.message}`);
         res.redirect('/auth');
     }
 });
+
 
 // Handle Email Verification Link
 router.get('/verify-email', async (req, res) => {
@@ -136,9 +148,12 @@ router.get('/verify-email', async (req, res) => {
         req.flash('success', 'Your email has been verified! You can now log in.');
         res.redirect('/auth');
     } catch (e) {
-        req.flash('error', 'Something went wrong during verification.');
-        res.redirect('/auth');
-    }
+    console.error("Signup Error:", e.message);
+    console.error(e.stack);
+    req.flash('error', `Signup failed: ${e.message}`);
+    res.redirect('/auth');
+}
+
 });
 
 
@@ -267,6 +282,22 @@ router.post('/report-found', isLoggedIn, upload.single('item-photo'), async (req
     }
 });
 
+// Reunited items page
+router.get('/reunited-items', async (req, res) => {
+  try {
+    const items = await ReunitedItem.find({})
+      .populate('user')
+      .populate('finder')
+      .sort({ reunitedAt: -1 });
+
+    res.render('reunited-items', { items });
+  } catch (err) {
+    console.error('Error loading reunited items:', err);
+    req.flash('error', 'Could not load reunited items.');
+    res.redirect('/');
+  }
+});
+
 
 router.get('/admin-login', (req, res) => {
     res.render('admin-login');
@@ -289,15 +320,28 @@ router.post('/admin-login', passport.authenticate('local', {
 });
 
 router.get('/admin/dashboard', isAdmin, async (req, res) => {
-    const allUsers = await User.find({});
-    const allLostItems = await LostItem.find({}).populate('user');
-    const allFoundItems = await FoundItem.find({}).populate('finder');
-    res.render('admin-dashboard', {
-        users: allUsers,
-        lostItems: allLostItems,
-        foundItems: allFoundItems
-    });
+    try {
+        const allUsers = await User.find({});
+        const allLostItems = await LostItem.find({}).populate('user');
+        const allFoundItems = await FoundItem.find({}).populate('finder');
+        const allReunitedItems = await ReunitedItem.find({})
+            .populate('user')
+            .populate('finder'); // ✅ Corrected
+
+        res.render('admin-dashboard', {
+            users: allUsers,
+            lostItems: allLostItems,
+            foundItems: allFoundItems,
+            reunitedItems: allReunitedItems
+        });
+    } catch (err) {
+        console.error("Admin dashboard error:", err);
+        req.flash('error', 'Unable to load admin dashboard.');
+        res.redirect('/');
+    }
 });
+
+
 
 router.post('/admin/lostitems/:id', isAdmin, async (req, res) => {
     await LostItem.findByIdAndDelete(req.params.id);
@@ -312,16 +356,119 @@ router.post('/admin/founditems/:id', isAdmin, async (req, res) => {
 });
 // Handle DELETING a Lost Item
 router.post('/admin/lostitems/:id/delete', isAdmin, async (req, res) => {
+  try {
+    const lostItem = await LostItem.findById(req.params.id).populate('user');
+    if (!lostItem) {
+      req.flash('error', 'Lost item not found.');
+      return res.redirect('/admin/dashboard#lost-items');
+    }
+
+    const reunitedItem = new ReunitedItem({
+      itemName: lostItem.itemName,
+      description: lostItem.description,
+      category: lostItem.category,
+      photoUrl: lostItem.photoUrl,
+      user: lostItem.user ? lostItem.user._id : null,
+      lostLocation: lostItem.lostLocation,
+      lostDate: lostItem.lostDate,
+      reunitedAt: new Date()
+    });
+
+    await reunitedItem.save();
     await LostItem.findByIdAndDelete(req.params.id);
-    req.flash('success', 'Successfully deleted the lost item report.');
+
+    req.flash('success', 'Lost item moved to reunited items.');
+    res.redirect('/admin/dashboard#reunited-items');
+  } catch (err) {
+    console.error('Error moving lost item:', err);
+    req.flash('error', 'Something went wrong.');
     res.redirect('/admin/dashboard#lost-items');
+  }
 });
+
+// Move report to reunited
+router.post('/admin/move-to-reunited/:type/:id', isAdmin, async (req, res) => {
+    const { type, id } = req.params;
+
+    try {
+        let item;
+        let reunitedData = { itemName: '', description: '', category: '', photoUrl: '', reunitedAt: new Date() };
+
+        if (type === 'lost') {
+            item = await LostItem.findById(id).populate('user');
+            if (!item) throw new Error('Lost item not found');
+
+            reunitedData = {
+                itemName: item.itemName,
+                description: item.description,
+                category: item.category,
+                photoUrl: item.photoUrl || '',
+                lostUser: item.user ? item.user._id : null,
+                reunitedAt: new Date()
+            };
+
+            await ReunitedItem.create(reunitedData);
+            await LostItem.findByIdAndDelete(id);
+
+        } else if (type === 'found') {
+            item = await FoundItem.findById(id).populate('finder');
+            if (!item) throw new Error('Found item not found');
+
+            reunitedData = {
+                itemName: item.itemName,
+                description: item.description,
+                category: item.category,
+                photoUrl: item.photoUrl || '',
+                foundUser: item.finder ? item.finder._id : null,
+                reunitedAt: new Date()
+            };
+
+            await ReunitedItem.create(reunitedData);
+            await FoundItem.findByIdAndDelete(id);
+        }
+
+        req.flash('success', 'Item moved to Reunited Items.');
+        res.redirect('/admin/dashboard#reunited-items');
+    } catch (error) {
+        console.error('Move to Reunited Error:', error);
+        req.flash('error', 'Something went wrong.');
+        res.redirect('/admin/dashboard');
+    }
+});
+
 // Handle DELETING a Found Item
 router.post('/admin/founditems/:id/delete', isAdmin, async (req, res) => {
+  try {
+    const foundItem = await FoundItem.findById(req.params.id).populate('finder');
+    if (!foundItem) {
+      req.flash('error', 'Found item not found.');
+      return res.redirect('/admin/dashboard#found-items');
+    }
+
+    const reunitedItem = new ReunitedItem({
+      itemName: foundItem.itemName,
+      description: foundItem.description,
+      category: foundItem.category,
+      photoUrl: foundItem.photoUrl,
+      finder: foundItem.finder ? foundItem.finder._id : null,
+      foundLocation: foundItem.foundLocation,
+      foundDate: foundItem.foundDate,
+      reunitedAt: new Date()
+    });
+
+    await reunitedItem.save();
     await FoundItem.findByIdAndDelete(req.params.id);
-    req.flash('success', 'Successfully deleted the found item report.');
+
+    req.flash('success', 'Found item moved to reunited items.');
+    res.redirect('/admin/dashboard#reunited-items');
+  } catch (err) {
+    console.error('Error moving found item:', err);
+    req.flash('error', 'Something went wrong.');
     res.redirect('/admin/dashboard#found-items');
+  }
 });
+
+
 // Display the forgot password form
 router.get('/forgot-password', (req, res) => {
     res.render('forgot-password');
