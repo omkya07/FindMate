@@ -296,11 +296,6 @@ table {
   /* 3 */
 }
 
-/*
-1. Change the font styles in all browsers.
-2. Remove the margin in Firefox and Safari.
-3. Remove default padding in all browsers.
-*/
 
 button,
 input,
@@ -473,18 +468,12 @@ dialog {
   padding: 0;
 }
 
-/*
-Prevent resizing textareas horizontally by default.
-*/
 
 textarea {
   resize: vertical;
 }
 
-/*
-1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)
-2. Set the default placeholder color to the user's configured gray 400 color.
-*/
+
 
 input::-moz-placeholder, textarea::-moz-placeholder {
   opacity: 1;
@@ -518,11 +507,6 @@ Make sure disabled buttons don't get the pointer cursor.
   cursor: default;
 }
 
-/*
-1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)
-2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)
-   This can trigger a poorly considered lint error in some tools but is included by design.
-*/
 
 img,
 svg,

@@ -219,7 +219,7 @@ router.post('/report-lost', isLoggedIn, upload.single('item-photo'), async (req,
 });
 
 // Display all found items (with search and filters)
-router.get('/view-found', async (req, res) => {
+router.get('/view-found',isAdmin, async (req, res) => {
     const { search, category, date } = req.query;
     let query = {};
     const findQuery = [];
