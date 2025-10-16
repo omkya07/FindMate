@@ -57,7 +57,6 @@ router.get('/community', (req, res) => res.render('community'));
 router.get('/auth', (req, res) => res.render('auth'));
 router.get('/signup', (req, res) => res.redirect('/auth'));
 router.get('/login', (req, res) => res.render('login'));
-
 // Handle Signup (sends verification email)
 router.post('/signup', async (req, res) => {
     try {
@@ -85,12 +84,16 @@ router.post('/signup', async (req, res) => {
         registeredUser.emailVerificationExpires = Date.now() + 3600000; // 1 hour
         await registeredUser.save();
 
+        // Use explicit Gmail SMTP instead of 'service'
         const transporter = nodemailer.createTransport({
-            service: 'Gmail',
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true, // SSL
             auth: {
                 user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS
-            }
+                pass: process.env.EMAIL_PASS // Gmail App Password
+            },
+            connectionTimeout: 10000 // 10 seconds timeout
         });
 
         const verificationUrl = `http://${req.headers.host}/verify-email?token=${token}`;
@@ -100,6 +103,7 @@ router.post('/signup', async (req, res) => {
             subject: 'FindMate - Verify Your Email Address',
             html: `<p>Hello ${registeredUser.fullName}, please click the link below to verify your email address:</p><a href="${verificationUrl}">${verificationUrl}</a>`
         };
+
         await transporter.sendMail(mailOptions);
 
         res.render('verify-prompt');
