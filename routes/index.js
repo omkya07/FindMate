@@ -284,7 +284,7 @@ router.post('/report-found', isLoggedIn, upload.single('item-photo'), async (req
         res.redirect('/view-found');
     } catch (error) {
         req.flash('error', 'Something went wrong. Please try again.');
-        res.redirect('/report-found');
+        res.redirect('/');
     }
 });
 
