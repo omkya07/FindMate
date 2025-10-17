@@ -10,7 +10,6 @@ const User = require('../models/user');
 const LostItem = require('../models/lostItem');
 const FoundItem = require('../models/foundItem');
 const { Resend } = require('resend');
-const resend = new Resend(process.env.RESEND_API_KEY);
 const upload = multer({ storage });
 
 
@@ -376,6 +375,7 @@ router.post('/admin/lostitems/:id/delete', isAdmin, async (req, res) => {
       category: lostItem.category,
       photoUrl: lostItem.photoUrl,
       user: lostItem.user ? lostItem.user._id : null,
+      user: item.user ? item.user._id : null,
       lostLocation: lostItem.lostLocation,
       lostDate: lostItem.lostDate,
       reunitedAt: new Date()
@@ -410,7 +410,7 @@ router.post('/admin/move-to-reunited/:type/:id', isAdmin, async (req, res) => {
                 description: item.description,
                 category: item.category,
                 photoUrl: item.photoUrl || '',
-                lostUser: item.user ? item.user._id : null,
+                user: item.user ? item.user._id : null,
                 reunitedAt: new Date()
             };
 
@@ -426,6 +426,7 @@ router.post('/admin/move-to-reunited/:type/:id', isAdmin, async (req, res) => {
                 description: item.description,
                 category: item.category,
                 photoUrl: item.photoUrl || '',
+                user: item.user ? item.user._id : null,
                 foundUser: item.finder ? item.finder._id : null,
                 reunitedAt: new Date()
             };
@@ -458,6 +459,7 @@ router.post('/admin/founditems/:id/delete', isAdmin, async (req, res) => {
       category: foundItem.category,
       photoUrl: foundItem.photoUrl,
       finder: foundItem.finder ? foundItem.finder._id : null,
+      user: item.user ? item.user._id : null,
       foundLocation: foundItem.foundLocation,
       foundDate: foundItem.foundDate,
       reunitedAt: new Date()

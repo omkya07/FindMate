@@ -154,8 +154,8 @@
                 <% reunitedItems.forEach(item => { %>
                   <tr>
                     <td class="px-6 py-4 text-sm font-medium text-gray-900"><%= item.itemName %></td>
-                    <td class="px-6 py-4 text-sm text-gray-500"><%= item.lostUser ? item.lostUser.email : 'N/A' %></td>
-                    <td class="px-6 py-4 text-sm text-gray-500"><%= item.foundUser ? item.foundUser.email : 'N/A' %></td>
+                    <td class="px-6 py-4 text-sm text-gray-500"><%= item.user ? item.user.email : 'N/A' %></td>
+                    <td class="px-6 py-4 text-sm text-gray-500"><%= item.finder ? item.finder.email : 'N/A' %></td>
                     <td class="px-6 py-4 text-sm text-gray-500"><%= item.reunitedAt ? new Date(item.reunitedAt).toLocaleDateString() : 'N/A' %></td>
                   </tr>
                 <% }) %>
